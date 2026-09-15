@@ -1,9 +1,9 @@
 # Maintainer: Jan Alexander Steffens (heftig) <heftig@archlinux.org>
 
-pkgbase=linux
+pkgbase=linux-ttm-test
 pkgver=7.2.6.arch2
 pkgrel=1
-pkgdesc='Linux'
+pkgdesc='Linux with the drm/TTM swapout bulk_move fix (drm/amd#5387)'
 url='https://github.com/archlinux/linux'
 arch=(
   x86_64
@@ -46,6 +46,7 @@ _srctag=v${pkgver%.*}-${pkgver##*.}
 source=(
   https://cdn.kernel.org/pub/linux/kernel/v${pkgver%%.*}.x/${_srcname}.tar.{xz,sign}
   $url/releases/download/$_srctag/linux-$_srctag.patch.zst{,.sig}
+  ttm-swapout-bulk-move-fix.patch
 )
 source_x86_64=(config.x86_64)
 validpgpkeys=(
@@ -56,14 +57,16 @@ validpgpkeys=(
 b2sums=('bbbb558b48b65cf544fe74652437f4aab6578fbb523f4bfef401cecfed8ea94fc939dbab73f2d30216b0729165b8f4a33e23993b082ca9285f259535e7441688'
         'SKIP'
         'a7659929bcae0182e6dd55774b5217c490850669314c3c3cd1e20589f41e86618b892da130708885877f4083be0eec6578c1840a8e6a02eb871b769fe4e9b30a'
-        'SKIP')
+        'SKIP'
+        '51b0d17e44cedb110b73ca61641d588c81168fbc1cadb3e7dcc03ea95d15d68c2a491d10a63095f0dd0996e92d07e4a96ab42b324d5a66178f0545bbdc8bc843')
 b2sums_x86_64=('cce32cf49e4639cdce0f950e55f6c6a44b2f68741c4aded81171773015dd5cb9a4a673e315a2d2056280dccdd52c116fc120e4bb11e0b81b2a3916bd9cc9ed0c')
 
 # https://www.kernel.org/pub/linux/kernel/v7.x/sha256sums.asc
 sha256sums=('039aef84f2b0994aeda3f4fcfc3d02ec9d7a9bbb9020ea264c43f446c860f606'
             'SKIP'
             '366b1efc1a4fa6e39713ae89e006d99b9f790682358b8bc84c784754a9d70b94'
-            'SKIP')
+            'SKIP'
+            'ddda3065bee9d410ec1255fde79ca552b1a3d95e899aa157df37409db19ded73')
 
 export KBUILD_BUILD_HOST=archlinux
 export KBUILD_BUILD_USER=$pkgbase

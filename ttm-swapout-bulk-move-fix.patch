@@ -1,0 +1,28 @@
+From: Vadim Nikitushkin <bub4z0r@gmail.com>
+Subject: [PATCH] drm/ttm: fix swapped-out resources never leaving their bulk_move range
+Link: https://lists.openwall.net/linux-kernel/2026/09/09/2805
+Closes: https://gitlab.freedesktop.org/drm/amd/-/issues/5387
+Fixes: b2ed01e7ad3d ("drm/ttm: Fix ttm_bo_swapout() infinite LRU walk on swapout failure")
+
+ttm_tt_swapout() returns the number of pages swapped out on success and
+a negative error code on failure; for a populated ttm it never returns
+zero. Commit b2ed01e7ad3d moved the bulk_move bookkeeping in
+ttm_bo_swapout_cb() under "if (!ret)", so the
+ttm_resource_del_bulk_move_unevictable() /
+ttm_resource_move_to_lru_tail() pair is now skipped on every successful
+swapout. Test for success (ret > 0) instead, matching the shrinker fix
+in 1d59f36e95f7. Reviewed upstream by Thomas Hellstrom and Christian
+Konig; queued in drm-misc-fixes (3db7d7d58341 plus fix-up).
+
+diff --git a/drivers/gpu/drm/ttm/ttm_bo.c b/drivers/gpu/drm/ttm/ttm_bo.c
+--- a/drivers/gpu/drm/ttm/ttm_bo.c
++++ b/drivers/gpu/drm/ttm/ttm_bo.c
+@@ -1180,7 +1180,7 @@ ttm_bo_swapout_cb(struct ttm_lru_walk *walk, struct ttm_buffer_object *bo)
+ 
+ 	if (ttm_tt_is_populated(tt)) {
+ 		ret = ttm_tt_swapout(bdev, tt, swapout_walk->gfp_flags);
+-		if (!ret) {
++		if (ret > 0) {
+ 			spin_lock(&bdev->lru_lock);
+ 			ttm_resource_del_bulk_move_unevictable(bo->resource, bo);
+ 			ttm_resource_move_to_lru_tail(bo->resource);
